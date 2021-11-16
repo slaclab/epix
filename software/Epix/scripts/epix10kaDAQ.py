@@ -281,11 +281,7 @@ if (PRINT_VERBOSE): pyrogue.streamTap(pgpVc0, dbgData)
 appTop = QApplication(sys.argv)
 guiTop = pyrogue.gui.GuiTop(group = 'ePix10kaGui')
 ePixBoard = EpixBoard(guiTop, cmd, dataWriter, srp, args.asic_rev)
-ePixBoard.start(
-   pollEn   = args.pollEn,
-   initRead = args.initRead,
-   timeout  = 5.0,  
-)
+ePixBoard.start()
 guiTop.addTree(ePixBoard)
 guiTop.resize(1000,800)
 
