@@ -848,14 +848,14 @@ class Epix10ka(pr.Device):
             17:'ASIC0_TPS', 19:'ASIC1_TPS', 18:'ASIC2_TPS', 16:'ASIC3_TPS'}
       super(self.__class__, self).__init__(**kwargs)
       
-      self.add(axi.AxiVersion                (name="AxiVersion",           offset=0x00000000, expand=False))
-      self.add(EpixFpgaRegisters             (name="EpixFpgaRegisters",    offset=0x01000000))
+      self.add(axi.AxiVersion                (name="AxiVersion",           offset=0x00000000, enabled=False, expand=False))
+      self.add(EpixFpgaRegisters             (name="EpixFpgaRegisters",    offset=0x01000000, enabled=False,))
       self.add(EpixFpgaExtRegisters          (name="EpixFpgaExtRegisters", offset=0x01100000, enabled=False, expand=False))
-      self.add(OscilloscopeRegisters         (name='Oscilloscope',         offset=0x01200000, expand=False, trigChEnum=trigChEnum, inChaEnum=inChaEnum, inChbEnum=inChbEnum))
-      self.add(Epix10kADouts                 (name="Epix10kADouts",        offset=0x01300000, expand=False))
+      self.add(OscilloscopeRegisters         (name='Oscilloscope',         offset=0x01200000, enabled=False, expand=False, trigChEnum=trigChEnum, inChaEnum=inChaEnum, inChbEnum=inChbEnum))
+      self.add(Epix10kADouts                 (name="Epix10kADouts",        offset=0x01300000, enabled=False, expand=False))
       for i in range(4):
          if asic_rev == 1:
-            self.add(epix.Epix10kaAsic          (name=('Epix10kaAsic[%d]'%i), offset=(0x02000000+i*0x400000), enabled=False, expand=False, size=0x0fffff))
+            self.add(epix.Epix10kaAsic          (name=('Epix10kaAsic[%d]'%i), offset=(0x02000000+i*0x400000), enabled=False, expand=False))
          else:
             self.add(epix.Epix10kaAsicRev2      (name=('Epix10kaAsic[%d]'%i), offset=(0x02000000+i*0x400000), enabled=False, expand=False, size=0x0fffff))
       #self.add(pgp.Pgp2bAxi                  (name='Pgp2bAxi',             offset=0x03000000, expand=False, enabled=False))
