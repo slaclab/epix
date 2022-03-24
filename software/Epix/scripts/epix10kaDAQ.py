@@ -24,7 +24,7 @@ import pyrogue as pr
 import pyrogue.utilities.prbs
 import pyrogue.utilities.fileio
 import pyrogue.interfaces.simulation
-import pyrogue.gui
+import pyrogue.pydm
 import surf
 import surf.axi
 import surf.protocols.ssi
@@ -244,11 +244,10 @@ class MyRunControl(pyrogue.RunControl):
 # Set base
 ##############################
 class EpixBoard(pyrogue.Root):
-    def __init__(self, guiTop, cmd, dataWriter, srp, asic_rev, **kwargs):
+    def __init__(self, cmd, dataWriter, srp, asic_rev, **kwargs):
         super().__init__(name = 'ePixBoard',description = 'ePix 10ka Board', **kwargs)
         #self.add(MyRunControl('runControl'))
         self.add(dataWriter)
-        self.guiTop = guiTop
 
         @self.command()
         def Trigger():
@@ -258,9 +257,6 @@ class EpixBoard(pyrogue.Root):
         self.add(fpga.Epix10ka(name='Epix10ka', asic_rev=asic_rev, offset=0, memBase=srp, hidden=False, enabled=True))
         self.add(pyrogue.RunControl(name = 'runControl', description='Run Controller ePix 10ka', cmd=self.Trigger, rates={1:'1 Hz', 2:'2 Hz', 4:'4 Hz', 8:'8 Hz', 10:'10 Hz', 30:'30 Hz', 60:'60 Hz', 120:'120 Hz'}))
         
-
-        
-
 
 # debug
 #mbcon = MbDebug()
@@ -276,25 +272,6 @@ if (PRINT_VERBOSE): dbgData = rogue.interfaces.stream.Slave()
 if (PRINT_VERBOSE): dbgData.setDebug(60, "DATA[{}]".format(0))
 if (PRINT_VERBOSE): pyrogue.streamTap(pgpVc0, dbgData)
 
-
-# Create GUI
-appTop = QApplication(sys.argv)
-guiTop = pyrogue.gui.GuiTop(group = 'ePix10kaGui')
-ePixBoard = EpixBoard(guiTop, cmd, dataWriter, srp, args.asic_rev)
-ePixBoard.start()
-guiTop.addTree(ePixBoard)
-guiTop.resize(1000,800)
-
-# Viewer gui
-if START_VIEWER:
-   gui = vi.Window(cameraType = 'ePix10ka')
-   gui.eventReader.frameIndex = 0
-   #gui.eventReaderImage.VIEW_DATA_CHANNEL_ID = 0
-   gui.setReadDelay(0)
-   pyrogue.streamTap(pgpVc0, gui.eventReader) 
-   pyrogue.streamTap(pgpVc2, gui.eventReaderScope)# PseudoScope
-   pyrogue.streamTap(pgpVc3, gui.eventReaderMonitoring) # Slow Monitoring
-
 # Create mesh node (this is for remote control only, no data is shared with this)
 #mNode = pyrogue.mesh.MeshNode('rogueTest',iface='eth0',root=ePixBoard)
 #mNode = pyrogue.mesh.MeshNode('rogueEpix10ka',iface='eth0',root=None)
@@ -302,16 +279,27 @@ if START_VIEWER:
 #mNode.start()
 
 
-# Run gui
-if (START_GUI):
-    appTop.exec_()
+with EpixBoard.Top(
+    cmd=cmd,
+    dataWriter=dataWriter,
+    srp=srp,
+    asic_rev=args.asic_rev
+    )
 
-# Close window and stop polling
-def stop():
-    mNode.stop()
-#    epics.stop()
-    ePixBoard.stop()
-    exit()
+    if START_VIEWER:
+       gui = vi.Window(cameraType = 'ePix10ka')
+       gui.eventReader.frameIndex = 0
+       #gui.eventReaderImage.VIEW_DATA_CHANNEL_ID = 0
+       gui.setReadDelay(0)
+       pyrogue.streamTap(pgpVc0, gui.eventReader)
+       pyrogue.streamTap(pgpVc2, gui.eventReaderScope)# PseudoScope
+       pyrogue.streamTap(pgpVc3, gui.eventReaderMonitoring) # Slow Monitoring
+
+    pyrogue.pydm.runPyDM(
+        root=root,
+        sizeX=900,
+        sizeY=800,
+    )
 
 # Start with: ipython -i scripts/epix10kaDAQ.py for interactive approach
 print("Started rogue mesh and epics V3 server. To exit type stop()")
