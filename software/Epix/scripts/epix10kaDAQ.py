@@ -284,7 +284,7 @@ with EpixBoard.Top(
     dataWriter=dataWriter,
     srp=srp,
     asic_rev=args.asic_rev
-    )
+    ) as root:
 
     if START_VIEWER:
        gui = vi.Window(cameraType = 'ePix10ka')
