@@ -1,12 +1,5 @@
 ePixBoard:
   enable: 'True'
-  forceWrite: 'False'
-  dataWriter:
-    enable: 'True'
-    dataFile: ''
-    open: 'False'
-    bufferSize: '0'
-    maxFileSize: '0'
   Epix10ka:
     enable: 'True'
     EpixFpgaRegisters:
@@ -23,13 +16,11 @@ ePixBoard:
       AutoRunEnable: 'False'
       AutoRunPeriod: '0xcb735'
       AutoDaqEnable: 'False'
-      OutPipelineDelay: '0x0'
       AcqToAsicR0Delay: '0x36d0'
       AsicR0ToAsicAcq: '0x1388'
       AsicAcqWidth: '0x1388'
       AsicAcqLToPPmatL: '0xc8'
-      AsicRoClkHalfT: '0xa'
-      AdcReadsPerPixel: '0x1'
+      AsicRoClkT: '0x14'
       AdcClkHalfT: '0x1'
       TotalPixelsToRead: '0x8580'
       AsicGR: 'False'
@@ -44,15 +35,10 @@ ePixBoard:
       AsicPinPpmatControl: 'True'
       AsicPinPpbeControl: 'False'
       AsicPinROClkControl: 'False'
-      AdcStreamMode: 'False'
       AdcPatternEnable: 'False'
-      AsicR0Mode: 'True'
       AsicR0Width: '0x1e'
       AsicPPmatToReadout: '0x0'
       PgpTrigEn: 'False'
-      MonStreamEn: 'False'
-      TpsTiming: '0x0'
-      TpsEdge: 'False'
       RequestStartup: 'False'
       AdcPipelineDelayA0: '0x20'
       AdcPipelineDelayA1: '0x0'
@@ -74,13 +60,7 @@ ePixBoard:
       InputChannelA: ASIC0_B2
       InputChannelB: ASIC0_B0
       TriggerDelay: '0'
-    Pgp2bAxi:
-      enable: 'True'
-      Loopback: 'Off'
-      LocData: '0x0'
-      LocDataEn: 'False'
-      AutoStatus: 'False'
-    Epix10kaAsic0:
+    Epix10kaAsic[0]:
       enable: 'True'
       CompTH_DAC: '0x2a'
       CompEn0: 'False'
@@ -145,7 +125,7 @@ ePixBoard:
       S2d2Dac: '0x16'
       S2d3TcDac: '0x1'
       S2d3Dac: '0x16'
-    Epix10kaAsic1:
+    Epix10kaAsic[1]:
       enable: 'False'
       CompTH_DAC: '0x0'
       CompEn0: 'False'
@@ -210,7 +190,7 @@ ePixBoard:
       S2d2Dac: '0x0'
       S2d3TcDac: '0x0'
       S2d3Dac: '0x0'
-    Epix10kaAsic2:
+    Epix10kaAsic[2]:
       enable: 'False'
       CompTH_DAC: '0x0'
       CompEn0: 'False'
@@ -275,7 +255,7 @@ ePixBoard:
       S2d2Dac: '0x0'
       S2d3TcDac: '0x0'
       S2d3Dac: '0x0'
-    Epix10kaAsic3:
+    Epix10kaAsic[3]:
       enable: 'False'
       CompTH_DAC: '0x0'
       CompEn0: 'False'
