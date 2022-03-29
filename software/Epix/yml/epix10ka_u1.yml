@@ -61,7 +61,7 @@ ePixBoard:
       InputChannelB: ASIC0_B0
       TriggerDelay: '0'
     Epix10kaAsic[0]:
-      enable: 'True'
+      enable: 'False'
       CompTH_DAC: '0x2a'
       CompEn0: 'False'
       CompEn1: 'False'
@@ -126,7 +126,7 @@ ePixBoard:
       S2d3TcDac: '0x1'
       S2d3Dac: '0x16'
     Epix10kaAsic[1]:
-      enable: 'False'
+      enable: 'True'
       CompTH_DAC: '0x0'
       CompEn0: 'False'
       CompEn1: 'False'
