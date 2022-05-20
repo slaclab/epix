@@ -281,9 +281,9 @@ appTop = QApplication(sys.argv)
 guiTop = pyrogue.gui.GuiTop(group = 'ePix100aGui')
 ePixBoard = EpixBoard(guiTop, cmd, dataWriter, srp)
 ePixBoard.start(
-   pollEn   = args.pollEn,
-   initRead = args.initRead,
-   timeout  = 5.0,  
+#   pollEn   = args.pollEn,
+#   initRead = args.initRead,
+#   timeout  = 5.0,  
 )
 guiTop.addTree(ePixBoard)
 guiTop.resize(1000,800)
