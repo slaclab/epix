@@ -933,7 +933,8 @@ class EpixFpgaRegisters(pr.Device):
       def setPerUs(deps):
          def setUsValue(var, value, write):
             rawVal = int(round(value*(self.BaseClock.get()/1000000.0)))
-            deps[0].set(rawVal,write)
+            if not write:
+               deps[0].set(rawVal)
          return setUsValue
 
       def getPerMs(var):
@@ -947,7 +948,8 @@ class EpixFpgaRegisters(pr.Device):
       def setPerMs(deps):
          def setMsValue(var, value, write):
             rawVal = int(round(value*(self.BaseClock.get()/1000.0)))
-            deps[0].set(rawVal,write)
+            if not write:
+               deps[0].set(rawVal)
          return setMsValue
 
       #In order to easely compare GedDAQ address map with the eprix rogue address map
@@ -1085,7 +1087,8 @@ class EpixFpgaExtRegisters(pr.Device):
       def setPerUs(deps):
          def setUsValue(var, value, write):
             rawVal = int(round(value*(self.BaseClock.get()/1000000.0)))
-            deps[0].set(rawVal,write)
+            if not write:
+               deps[0].set(rawVal)
          return setUsValue
 
 
