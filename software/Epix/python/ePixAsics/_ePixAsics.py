@@ -925,7 +925,7 @@ class Epix10kaAsic(pr.Device):
             pr.RemoteCommand(name='WriteMatrixData', description='', offset=0x00004000*addrSize, bitSize=4, bitOffset=0, function=pr.Command.touch, hidden=False)))
    
         # CMD = 5, Addr = X  : Read/Write Pixel with data
-        self.add(pr.RemoteCommand(name='WritePixelData',  description='WritePixelData',  offset=0x00005000*addrSize, bitSize=4, bitOffset=0,  function=pr.Command.touch, hidden=False))
+        # self.add(pr.RemoteCommand(name='WritePixelData',  description='WritePixelData',  offset=0x00005000*addrSize, bitSize=4, bitOffset=0,  function=pr.Command.touch, hidden=False))
  
         # CMD = 7, Addr = X  : Prepare to write chip ID
         #self.add((
@@ -970,7 +970,11 @@ class Epix10kaAsic(pr.Device):
 #            self.checkBlocks(recurse=True, variable=None)
         @self.command(description='SetPixelBitmap command function', value='', retValue='')
         def SetPixelBitmap(arg, dev, cmd):
-            print('HEREEREREF')
+            dlg = QFileDialog()
+
+            loadFile = dlg.getOpenFileNames(caption='load bitmap file', filter='Config Files(*.csv);;All Files(*.*)')
+
+
             """SetPixelBitmap command function"""
             if self._size == 0:
                 self._size = 0xfffff
@@ -979,12 +983,13 @@ class Epix10kaAsic(pr.Device):
 
             if (self.enable.get()):
                 self.reportCmd(dev, cmd, arg)
-                if not isinstance(arg, str):
-                    arg = ''
-                if len(arg) > 0:
-                    self.filename = arg
-                if os.path.splitext(self.filename)[1] == '.csv':
-                    matrixCfg = np.genfromtxt(self.filename, delimiter=',')
+            
+            # Detect QT5 return
+            if isinstance(loadFile,tuple):
+                loadFile = loadFile[0]
+
+                if '.csv' in loadFile[0]:
+                    matrixCfg = np.genfromtxt(loadFile[0], delimiter=',')
                     if matrixCfg.shape == (178, 192):
                         self._rawWrite(0x00000000 * addrSize, 0)
                         self._rawWrite(0x00008000 * addrSize, 0)
@@ -1008,7 +1013,7 @@ class Epix10kaAsic(pr.Device):
                     else:
                         print('csv file must be 192x178 pixels')
                 else:
-                    print("Not csv file : ", self.filename)
+                    print("Not csv file : ", loadFile[0])
             else:
                 print("Warning: ASIC enable is set to False!")
 
