@@ -19,13 +19,17 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 
+import pyrogue as pr
 import os, sys, time
+pr.addLibraryPath(f'{os.getcwd()}/../')
+import setupLibPaths
+
 import numpy as np
 import ePixViewer.Cameras as cameras
 import ePixViewer.imgProcessing as imgPr
 # 
 import matplotlib   
-matplotlib.use('QT4Agg')
+# matplotlib.use('QT4Agg')
 import matplotlib.pyplot as plt
 import h5py
 #matplotlib.pyplot.ion()
