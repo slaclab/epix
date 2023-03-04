@@ -177,18 +177,29 @@ begin
    ledEn          <= epixConfig.powerEnable(3);
    
    -- Triggers out
-   triggerOut  <= iAsicAcq;
+   triggerOut  <= 
+         iAsicAcq     when epixConfigExt.dbgReg2 = "00000" else
+         acqStart    when epixConfigExt.dbgReg2 = "00001" else
+         dataSend    when epixConfigExt.dbgReg2 = "00010" else
+         acqBusy     when epixConfigExt.dbgReg2 = "00011" else
+         readDone    when epixConfigExt.dbgReg2 = "00100" else
+         iAsicSync   when epixConfigExt.dbgReg2 = "00101" else
+         iAsicR0     when epixConfigExt.dbgReg2 = "00110" else
+         iAsicRoClk  when epixConfigExt.dbgReg2 = "00111" else
+         iInjAcq     when epixConfigExt.dbgReg2 = "01000" else
+         0;
+   
    mpsOut      <= 
-      iInjAcq     when epixConfigExt.dbgReg = "00000" else
-      acqStart    when epixConfigExt.dbgReg = "00001" else
-      dataSend    when epixConfigExt.dbgReg = "00010" else
-      acqBusy     when epixConfigExt.dbgReg = "00011" else
-      readDone    when epixConfigExt.dbgReg = "00100" else
-      iAsicSync   when epixConfigExt.dbgReg = "00101" else
-      iAsicR0     when epixConfigExt.dbgReg = "00110" else
-      iAsicRoClk  when epixConfigExt.dbgReg = "00111" else
-      iInjAcq     when epixConfigExt.dbgReg = "01000" else     -- this is debug pulse to trigger exernal source within ACQ pulse
-      '0';
+         iAsicAcq     when epixConfigExt.dbgReg = "00000" else
+         acqStart    when epixConfigExt.dbgReg = "00001" else
+         dataSend    when epixConfigExt.dbgReg = "00010" else
+         acqBusy     when epixConfigExt.dbgReg = "00011" else
+         readDone    when epixConfigExt.dbgReg = "00100" else
+         iAsicSync   when epixConfigExt.dbgReg = "00101" else
+         iAsicR0     when epixConfigExt.dbgReg = "00110" else
+         iAsicRoClk  when epixConfigExt.dbgReg = "00111" else
+         iInjAcq     when epixConfigExt.dbgReg = "01000" else     -- this is debug pulse to trigger exernal source within ACQ pulse
+         '0';
    
    -- Triggers in
    iRunTrigger    <= runTrigger;

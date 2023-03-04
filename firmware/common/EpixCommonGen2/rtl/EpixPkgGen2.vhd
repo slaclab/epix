@@ -104,6 +104,7 @@ package EpixPkgGen2 is
    
    type EpixConfigExtType is record
       dbgReg             : slv(4 downto 0);
+      dbgReg2            : slv(4 downto 0);
       injDelay           : slv(31 downto 0);
       injDlyWidth        : slv(31 downto 0);
       -- injSkip            : slv(7 downto 0);
@@ -116,6 +117,7 @@ package EpixPkgGen2 is
    type EpixConfigExtArray is array (natural range <>) of EpixConfigExtType;
    constant EPIX_CONFIG_EXT_INIT_C : EpixConfigExtType := (
       dbgReg             => (others => '0'),
+      dbgReg2            => (others => '0'),
       injDelay           => x"000037BB",
       injDlyWidth        => x"000032AA",
       -- injSkip            => (others => '0'),

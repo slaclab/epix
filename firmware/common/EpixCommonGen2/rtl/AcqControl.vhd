@@ -149,7 +149,7 @@ architecture AcqControl of AcqControl is
    signal curState           : state := IDLE_S;
    signal nxtState           : state := IDLE_S;
    
-   signal injTimeCnt    : slv(31 downto 0);
+   signal injTimeCnt    : slv(31 downto 0) := (others => '0');
    -- signal injStopCnt    : slv(31 downto 0);
    -- signal injSkipCnt    : slv(7 downto 0);
    -- signal injStartEn    : sl;
@@ -645,14 +645,14 @@ begin
       );
 
    -- rising edge of Acq
-   U_AcqEdge : entity surf.SynchronizerEdge
-      port map (
-         clk         => sysClk,
-         rst         => sysClkRst,
-         dataIn      => iAsicR0,
-         risingEdge  => risingAcq,
-         fallingEdge => open
-      );
+   -- U_AcqEdge : entity surf.SynchronizerEdge
+   --    port map (
+   --       clk         => sysClk,
+   --       rst         => sysClkRst,
+   --       dataIn      => iAsicR0,
+   --       risingEdge  => risingAcq,
+   --       fallingEdge => open
+   --    );
    
    -- falling edge strobe is used to misalign the sync pulse vs acq on demand
    -- selEdgeAcq <= risingAcqD1 when injSkipCnt = 0 else fallingAcq;
@@ -661,17 +661,25 @@ begin
    process(sysClk)
    begin
       if rising_edge(sysClk) then
-         if injTimeCnt /= x"FFFFFFFF" then
-            injTimeCnt <= injTimeCnt + 1;
-         end if;
-         
-         if epixConfigExt.injDelay <= injTimeCnt and epixConfigExt.injDelay /= 0 then 
-            iInjAcq <= not iInjAcq;
-            
-            if epixConfigExt.injDlyWidth  /= 0 and (epixConfigExt.injDlyWidth + epixConfigExt.injDelay) <= injTimeCnt then
-               iInjAcq <= iInjAcq;
+         if iAsicR0 = '1' and  dummyAcq = '0' then
+            if injTimeCnt /= x"FFFFFFFF" then
+               injTimeCnt <= injTimeCnt + 1;
             end if;
+            
+            if epixConfigExt.injDelay <= injTimeCnt and epixConfigExt.injDelay /= 0 then 
+               iInjAcq <= '1';
+               
+               if epixConfigExt.injDlyWidth  /= 0 and (epixConfigExt.injDlyWidth + epixConfigExt.injDelay) <= injTimeCnt then
+                  iInjAcq <= '0';
+               end if;
+            end if;
+
+         elsif iAsicR0 = '0' then
+            iInjAcq <= '0';
+            injTimeCnt <= (others => '0');
+      
          end if;
+      
       end if;
    end process;
 

@@ -129,10 +129,10 @@ begin
       axiSlaveRegister (regCon, x"003" & "00",  0, v.epixRegOut.oversampleSize);
       
       axiSlaveRegister (regCon, x"200" & "00",  0, v.epixRegOut.dbgReg);
-      axiSlaveRegister (regCon, x"201" & "00",  0, v.epixRegOut.injDelay);
-      axiSlaveRegister (regCon, x"202" & "00",  0, v.epixRegOut.injDlyWidth);
-      -- axiSlaveRegister (regCon, x"203" & "00",  0, v.epixRegOut.injSkip);
-      -- axiSlaveRegister (regCon, x"204" & "00",  0, v.epixRegOut.injSyncEn);
+      axiSlaveRegister (regCon, x"201" & "00",  0, v.epixRegOut.dbgReg2);
+      axiSlaveRegister (regCon, x"202" & "00",  0, v.epixRegOut.injDelay);
+      axiSlaveRegister (regCon, x"203" & "00",  0, v.epixRegOut.injDlyWidth);
+      axiSlaveRegister (regCon, x"204" & "00",  0, v.epixRegOut.injSyncEn);
       
       axiSlaveRegister (regCon, x"C00",  0, v.epixRegOut.pipelineDelay( 0));
       axiSlaveRegister (regCon, x"C04",  0, v.epixRegOut.pipelineDelay( 1));
