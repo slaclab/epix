@@ -187,7 +187,7 @@ begin
          iAsicR0     when epixConfigExt.dbgReg2 = "00110" else
          iAsicRoClk  when epixConfigExt.dbgReg2 = "00111" else
          iInjAcq     when epixConfigExt.dbgReg2 = "01000" else
-         0;
+         '0';
    
    mpsOut      <= 
          iAsicAcq     when epixConfigExt.dbgReg = "00000" else
