@@ -34,7 +34,6 @@ ePixBoard:
       AutoRunEnable: False
       AutoRunPeriod: 0xcb735
       AutoRunPeriodMs: 8.33333
-      AutoTrigFreqHz: 120.0
       AutoDaqEnable: False
       AcqToAsicR0Delay: 0x0
       AcqToAsicR0DelayUs: 0.00000
@@ -75,12 +74,12 @@ ePixBoard:
       GhostCorrEn: True
       OversampleEn: False
       OversampleSize: 0x3
-      DebugOut: 0x0
-      InjStartDly: 0x511
-      InjStartDlyUs: 10.00096
-      InjStopDly: 0x37ba
-      InjStopDlyUs: 110.00289
-      InjSkip: 0x0
+      MpsOut: 0x0
+      TriggerOut: 0x0
+      InjDelay: 0x511
+      InjDelayUs: 10.00096
+      InjDlyWidth: 0x37ba
+      InjDlyWidthUs: 110.00289
       InjSyncEn: True
       BankPipelineDly00: 0x2c
       BankPipelineDly01: 0x2c

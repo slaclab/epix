@@ -952,6 +952,31 @@ class EpixFpgaRegisters(pr.Device):
                deps[0].set(rawVal)
          return setMsValue
 
+
+      def getPerMs(var):
+          x = var.dependencies[0].value()
+          return x / 100000.0
+
+      def setPerMs(deps):
+          def setMsValue(value):
+              rawVal = int(round(value * 100000))
+              deps[0].set(rawVal)
+          return setMsValue
+
+      def getFreqHz(var):
+          x = var.dependencies[0].value()
+          if x != 0:
+              return 100000000.0 / x
+          else:
+              return 0.0
+
+      def setFreqHz(deps):
+          def setHzValue(value):
+              rawVal = int(round((1.0 / value) * 100000000))
+              deps[0].set(rawVal)
+          return setHzValue
+
+
       #In order to easely compare GedDAQ address map with the eprix rogue address map
       #it is defined the addrSize RemoteVariable
       addrSize = 4
@@ -988,6 +1013,7 @@ class EpixFpgaRegisters(pr.Device):
       self.add(pr.RemoteVariable(name='AutoRunEnable',       description='Enable auto run trigger',                                 offset=0x00000011*addrSize, bitSize=1,  bitOffset=0, base=pr.Bool, mode='RW'))
       self.add(pr.RemoteVariable(name='AutoRunPeriod',       description='Auto run trigger period',                                 offset=0x00000012*addrSize, bitSize=32, bitOffset=0, base=pr.UInt,  mode='RW'))
       self.add(pr.LinkVariable(  name='AutoRunPeriodMs',     dependencies=[self.AutoRunPeriod], mode='RW', units='ms', linkedGet=getPerMs, linkedSet=setPerMs([self.AutoRunPeriod]), disp='{:1.5f}'))
+      self.add(pr.LinkVariable( name='AutoTrigFreqHz', mode='RW', units='Hz',linkedGet=getFreqHz,linkedSet=setFreqHz([self.AutoRunPeriod]), disp='{:1.1f}',dependencies=[self.AutoRunPeriod]))
       self.add(pr.RemoteVariable(name='AutoDaqEnable',       description='Enable auto DAQ trigger',                                 offset=0x00000013*addrSize, bitSize=1,  bitOffset=0, base=pr.Bool, mode='RW'))
       self.add(pr.RemoteVariable(name='AcqToAsicR0Delay',    description='Delay between system acq and ASIC reset pulse',           offset=0x00000020*addrSize, bitSize=31, bitOffset=0, base=pr.UInt,  mode='RW'))
       self.add(pr.LinkVariable(  name='AcqToAsicR0DelayUs',  dependencies=[self.AcqToAsicR0Delay], mode='RW', units='us', linkedGet=getPerUs, linkedSet=setPerUs([self.AcqToAsicR0Delay]), disp='{:1.5f}'))
@@ -1102,12 +1128,12 @@ class EpixFpgaExtRegisters(pr.Device):
       self.add(pr.RemoteVariable(name='OversampleEn',        description='OversampleEn',     offset=0x00000002*addrSize, bitSize=1,  bitOffset=0, base=pr.Bool, mode='RW'))
       self.add(pr.RemoteVariable(name='OversampleSize',      description='OversampleSize',   offset=0x00000003*addrSize, bitSize=3,  bitOffset=0, base=pr.UInt, mode='RW'))
 
-      self.add(pr.RemoteVariable(name='DebugOut',            description='DebugOut',         offset=0x00000200*addrSize, bitSize=5,  bitOffset=0, base=pr.UInt, mode='RW'))
-      self.add(pr.RemoteVariable(name='InjDelay',         description='InjDelay wrt to R0',      offset=0x00000201*addrSize, bitSize=32, bitOffset=0, base=pr.UInt, mode='RW'))
+      self.add(pr.RemoteVariable(name='MpsOut',            description='MpsOut TTL',         offset=0x00000200*addrSize, bitSize=5,  bitOffset=0, base=pr.UInt, mode='RW'))
+      self.add(pr.RemoteVariable(name='TriggerOut',         description='TriggerOut TTL',         offset=0x00000201*addrSize, bitSize=5,  bitOffset=0, base=pr.UInt, mode='RW'))
+      self.add(pr.RemoteVariable(name='InjDelay',         description='InjDelay wrt to R0',      offset=0x00000202*addrSize, bitSize=32, bitOffset=0, base=pr.UInt, mode='RW'))
       self.add(pr.LinkVariable(  name='InjDelayUs',       dependencies=[self.InjDelay], mode='RW', units='us', linkedGet=getPerUs, linkedSet=setPerUs([self.InjDelay]), disp='{:1.5f}'))
-      self.add(pr.RemoteVariable(name='InjDlyWidth',          description='InjDlyWidth',       offset=0x00000202*addrSize, bitSize=32, bitOffset=0, base=pr.UInt, mode='RW'))
+      self.add(pr.RemoteVariable(name='InjDlyWidth',          description='InjDlyWidth',       offset=0x00000203*addrSize, bitSize=32, bitOffset=0, base=pr.UInt, mode='RW'))
       self.add(pr.LinkVariable(  name='InjDlyWidthUs',        dependencies=[self.InjDlyWidth], mode='RW', units='us', linkedGet=getPerUs, linkedSet=setPerUs([self.InjDlyWidth]), disp='{:1.5f}'))
-      # self.add(pr.RemoteVariable(name='InjSkip',             description='InjSkip',          offset=0x00000203*addrSize, bitSize=8,  bitOffset=0, base=pr.UInt, mode='RW'))
       self.add(pr.RemoteVariable(name='InjSyncEn',           description='InjSyncEn',        offset=0x00000204*addrSize, bitSize=1,  bitOffset=0, base=pr.Bool, mode='RW'))
 
       self.add(pr.RemoteVariable(name='BankPipelineDly00',   description='BankDly00',        offset=0x00000300*addrSize, bitSize=7,  bitOffset=0, base=pr.UInt, mode='RW'))
