@@ -34,7 +34,6 @@ ePixBoard:
       AutoRunEnable: False
       AutoRunPeriod: 0xcb735
       AutoRunPeriodMs: 8.33333
-      AutoTrigFreqHz: 120.0
       AutoDaqEnable: False
       AcqToAsicR0Delay: 0x0
       AcqToAsicR0DelayUs: 0.00000
