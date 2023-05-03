@@ -290,6 +290,8 @@ class Epix100aAsic(pr.Device):
     def fnSetPixelBitmap(self, dev,cmd,arg):
         """SetPixelBitmap command function"""
         addrSize = 4
+        if self._size == 0:
+                self._size = 0xfffff
 
         if (self.enable.get()):
             self.reportCmd(dev,cmd,arg)
@@ -923,7 +925,7 @@ class Epix10kaAsic(pr.Device):
             pr.RemoteCommand(name='WriteMatrixData', description='', offset=0x00004000*addrSize, bitSize=4, bitOffset=0, function=pr.Command.touch, hidden=False)))
    
         # CMD = 5, Addr = X  : Read/Write Pixel with data
-        self.add(pr.RemoteCommand(name='WritePixelData',  description='WritePixelData',  offset=0x00005000*addrSize, bitSize=4, bitOffset=0,  function=pr.Command.touch, hidden=False))
+        # self.add(pr.RemoteCommand(name='WritePixelData',  description='WritePixelData',  offset=0x00005000*addrSize, bitSize=4, bitOffset=0,  function=pr.Command.touch, hidden=False))
  
         # CMD = 7, Addr = X  : Prepare to write chip ID
         #self.add((
@@ -946,174 +948,169 @@ class Epix10kaAsic(pr.Device):
         # the passed arg is available as 'arg'. Use 'dev' to get to device scope.
         # A command can also be a call to a local function with local scope.
         # The command object and the arg are passed
-
-        self.add(
-            pr.Command(name='ClearMatrix',description='Clear configuration bits of all pixels', function=self.fnClearMatrix))
-            
-        self.add(
-            pr.Command(name='SetMatrixHiMed',description='Set configuration bits of all pixels to 12', function=self.fnSetMatrixHiMed))
-            
-        self.add(
-            pr.Command(name='SetMatrixLow',description='Set configuration bits of all pixels to 8', function=self.fnSetMatrixLow))
-
-        self.add(
-            pr.Command(name='SetPixelBitmap',description='Set pixel bitmap of the matrix', function=self.fnSetPixelBitmap))
-        
-        self.add(
-            pr.Command(name='GetPixelBitmap',description='Get pixel bitmap of the matrix', function=self.fnGetPixelBitmap))
+# 
+        # self.add(
+            # pr.Command(name='ClearMatrix',description='Clear configuration bits of all pixels', function=self.fnClearMatrix))
+            # 
+        # self.add(
+            # pr.Command(name='SetMatrixHiMed',description='Set configuration bits of all pixels to 12', function=self.fnSetMatrixHiMed))
+            # 
+        # self.add(
+            # pr.Command(name='SetMatrixLow',description='Set configuration bits of all pixels to 8', function=self.fnSetMatrixLow))
+# 
+        # self.add(
+            # pr.Command(name='SetPixelBitmap',description='Set pixel bitmap of the matrix', function=self.fnSetPixelBitmap))
+        # 
+        # self.add(
+            # pr.Command(name='GetPixelBitmap',description='Get pixel bitmap of the matrix', function=self.fnGetPixelBitmap))
 
 #    def enableChanged(self,value):
 #        if value is True:
 #            self.readBlocks(recurse=True, variable=None)
 #            self.checkBlocks(recurse=True, variable=None)
+        @self.command(description='SetPixelBitmap command function', value='', retValue='')
+        def SetPixelBitmap(arg, dev, cmd):
+            dlg = QFileDialog()
 
-    def fnSetPixelBitmap(self, dev,cmd,arg):
-        """SetPixelBitmap command function"""
-        addrSize = 4
-        #set r0mode in order to have saci cmd to work properly on legacy firmware
-        #self.root.Epix10ka.EpixFpgaRegisters.AsicR0Mode.set(True)
+            loadFile = dlg.getOpenFileNames(caption='load bitmap file', filter='Config Files(*.csv);;All Files(*.*)')
 
-        if (self.enable.get()):
-            self.reportCmd(dev,cmd,arg)
-            if not isinstance(arg, str):
-               arg = ''
-            if len(arg) > 0:
-               self.filename = arg
-            else:
-               self.filename = QFileDialog.getOpenFileName(self.root.guiTop, 'Open File', '', 'csv file (*.csv);; Any (*.*)')
-            # in PyQt5 QFileDialog returns a tuple
-            if usingPyQt5:
-               self.filename = self.filename[0]
-            if os.path.splitext(self.filename)[1] == '.csv':
-                matrixCfg = np.genfromtxt(self.filename, delimiter=',')
-                if matrixCfg.shape == (178, 192):
-                    self._rawWrite(0x00000000*addrSize,0)
-                    self._rawWrite(0x00008000*addrSize,0)
-                    for x in range (0, 177):
-                        for y in range (0, 192):
-                            bankToWrite = int(y/48);
-                            if (bankToWrite == 0):
-                               colToWrite = 0x700 + y%48;
-                            elif (bankToWrite == 1):
-                               colToWrite = 0x680 + y%48;
-                            elif (bankToWrite == 2):
-                               colToWrite = 0x580 + y%48;
-                            elif (bankToWrite == 3):
-                               colToWrite = 0x380 + y%48;
-                            else:
-                               print('unexpected bank number')
-                            self._rawWrite(0x00006011*addrSize, x)
-                            self._rawWrite(0x00006013*addrSize, colToWrite) 
-                            self._rawWrite(0x00005000*addrSize, (int(matrixCfg[x][y])))
-                    self._rawWrite(0x00000000*addrSize,0)
+
+            """SetPixelBitmap command function"""
+            if self._size == 0:
+                self._size = 0xfffff
+
+            addrSize = 4
+
+            if (self.enable.get()):
+                self.reportCmd(dev, cmd, arg)
+            
+            # Detect QT5 return
+            if isinstance(loadFile,tuple):
+                loadFile = loadFile[0]
+
+                if '.csv' in loadFile[0]:
+                    matrixCfg = np.genfromtxt(loadFile[0], delimiter=',')
+                    if matrixCfg.shape == (178, 192):
+                        self._rawWrite(0x00000000 * addrSize, 0)
+                        self._rawWrite(0x00008000 * addrSize, 0)
+                        for x in range(0, 177):
+                            for y in range(0, 192):
+                                bankToWrite = int(y / 48)
+                                if (bankToWrite == 0):
+                                    colToWrite = 0x700 + y % 48
+                                elif (bankToWrite == 1):
+                                    colToWrite = 0x680 + y % 48
+                                elif (bankToWrite == 2):
+                                    colToWrite = 0x580 + y % 48
+                                elif (bankToWrite == 3):
+                                    colToWrite = 0x380 + y % 48
+                                else:
+                                    print('unexpected bank number')
+                                self._rawWrite(0x00006011 * addrSize, x)
+                                self._rawWrite(0x00006013 * addrSize, colToWrite)
+                                self._rawWrite(0x00005000 * addrSize, (int(matrixCfg[x][y])))
+                        self._rawWrite(0x00000000 * addrSize, 0)
+                    else:
+                        print('csv file must be 192x178 pixels')
                 else:
-                    print('csv file must be 192x178 pixels')
+                    print("Not csv file : ", loadFile[0])
             else:
-                print("Not csv file : ", self.filename)
-        else:
-            print("Warning: ASIC enable is set to False!")      
+                print("Warning: ASIC enable is set to False!")
 
-    def fnGetPixelBitmap(self, dev,cmd,arg):
-        """GetPixelBitmap command function"""
-        addrSize = 4
-        #set r0mode in order to have saci cmd to work properly on legacy firmware
-        #self.root.Epix10ka.EpixFpgaRegisters.AsicR0Mode.set(True)
+        @self.command(description='GetPixelBitmap command function', value='', retValue='')
+        def GetPixelBitmap(dev, cmd, arg):
+            """GetPixelBitmap command function"""
+            if self._size == 0:
+                self._size = 0xfffff
 
-        if (self.enable.get()):
-            self.reportCmd(dev,cmd,arg)
-            if not isinstance(arg, str):
-               arg = ''
-            if len(arg) > 0:
-               self.filename = arg
+            addrSize = 4
+
+            if (self.enable.get()):
+                self.reportCmd(dev, cmd, arg)
+                if not isinstance(arg, str):
+                    arg = ''
+                if len(arg) > 0:
+                    self.filename = arg
+
+                if os.path.splitext(self.filename)[1] == '.csv':
+                    readBack = np.zeros((178, 192), dtype='uint16')
+                    self._rawWrite(0x00000000 * addrSize, 0)
+                    self._rawWrite(0x00008000 * addrSize, 0)
+                    for x in range(0, 177):
+                        for y in range(0, 192):
+                            bankToWrite = int(y / 48)
+                            if (bankToWrite == 0):
+                                colToWrite = 0x700 + y % 48
+                            elif (bankToWrite == 1):
+                                colToWrite = 0x680 + y % 48
+                            elif (bankToWrite == 2):
+                                colToWrite = 0x580 + y % 48
+                            elif (bankToWrite == 3):
+                                colToWrite = 0x380 + y % 48
+                            else:
+                                print('unexpected bank number')
+                            self._rawWrite(0x00006011 * addrSize, x)
+                            self._rawWrite(0x00006013 * addrSize, colToWrite)
+                            readBack[x, y] = self._rawRead(0x00005000 * addrSize)
+                    np.savetxt(self.filename, readBack, fmt='%d', delimiter=',', newline='\n')
             else:
-               self.filename = QFileDialog.getOpenFileName(self.root.guiTop, 'Open File', '', 'csv file (*.csv);; Any (*.*)')
-            # in PyQt5 QFileDialog returns a tuple
-            if usingPyQt5:
-               self.filename = self.filename[0]
-            if os.path.splitext(self.filename)[1] == '.csv':
-                readBack = np.zeros((178, 192),dtype='uint16')
-                self._rawWrite(0x00000000*addrSize,0)
-                self._rawWrite(0x00008000*addrSize,0)
-                for x in range (0, 177):
-                   for y in range (0, 192):
-                      bankToWrite = int(y/48);
-                      if (bankToWrite == 0):
-                         colToWrite = 0x700 + y%48;
-                      elif (bankToWrite == 1):
-                         colToWrite = 0x680 + y%48;
-                      elif (bankToWrite == 2):
-                         colToWrite = 0x580 + y%48;
-                      elif (bankToWrite == 3):
-                         colToWrite = 0x380 + y%48;
-                      else:
-                         print('unexpected bank number')
-                      self._rawWrite(0x00006011*addrSize, x)
-                      self._rawWrite(0x00006013*addrSize, colToWrite)
-                      readBack[x, y] = self._rawRead(0x00005000*addrSize)
-                np.savetxt(self.filename, readBack, fmt='%d', delimiter=',', newline='\n')
-        else:
-            print("Warning: ASIC enable is set to False!")             
+                print("Warning: ASIC enable is set to False!")
 
-    def fnClearMatrix(self, dev,cmd,arg):
-        """ClearMatrix command function"""
-        #set r0mode in order to have saci cmd to work properly on legacy firmware
-        #self.root.Epix10ka.EpixFpgaRegisters.AsicR0Mode.set(True)
+        @self.command(description='Clear selected matrix')
+        def ClearMatrix(dev, cmd, arg):
+            """ClearMatrix command function"""
 
-        if (self.enable.get()):
-            self.reportCmd(dev,cmd,arg)
-            for i in range (0, 48):
-                self.PrepareMultiConfig()
-                self.ColCounter.set(i)
-                self.WriteColData.set(0)
-            self.CmdPrepForRead()
-        else:
-            print("Warning: ASIC enable is set to False!") 
+            if (self.enable.get()):
+                self.reportCmd(dev, cmd, arg)
+                for i in range(0, 48):
+                    self.PrepareMultiConfig()
+                    self.ColCounter.set(i)
+                    self.WriteColData.set(0)
+                self.CmdPrepForRead()
+            else:
+                print("Warning: ASIC enable is set to False!")
 
+        @self.command()
+        def SetMatrixHiMed(dev, cmd, arg):
+            """ClearMatrix command function"""
 
-    def fnSetMatrixHiMed(self, dev,cmd,arg):
-        """ClearMatrix command function"""
-        #set r0mode in order to have saci cmd to work properly on legacy firmware
-        #self.root.Epix10ka.EpixFpgaRegisters.AsicR0Mode.set(True)
+            if (self.enable.get()):
+                self.reportCmd(dev, cmd, arg)
+                for i in range(0, 48):
+                    self.PrepareMultiConfig()
+                    self.ColCounter.set(i)
+                    self.WriteColData.set(12)
+                self.CmdPrepForRead()
+            else:
+                print("Warning: ASIC enable is set to False!")
 
-        if (self.enable.get()):
-            self.reportCmd(dev,cmd,arg)
-            for i in range (0, 48):
-                self.PrepareMultiConfig()
-                self.ColCounter.set(i)
-                self.WriteColData.set(12)
-            self.CmdPrepForRead()
-        else:
-            print("Warning: ASIC enable is set to False!") 
-            
-            
-    def fnSetMatrixLow(self, dev,cmd,arg):
-        """ClearMatrix command function"""
-        #set r0mode in order to have saci cmd to work properly on legacy firmware
-        #self.root.Epix10ka.EpixFpgaRegisters.AsicR0Mode.set(True)
+        @self.command()
+        def SetMatrixLow(dev, cmd, arg):
+            """ClearMatrix command function"""
 
-        if (self.enable.get()):
-            self.reportCmd(dev,cmd,arg)
-            for i in range (0, 48):
-                self.PrepareMultiConfig()
-                self.ColCounter.set(i)
-                self.WriteColData.set(8)
-            self.CmdPrepForRead()
-        else:
-            print("Warning: ASIC enable is set to False!") 
-            
+            if (self.enable.get()):
+                self.reportCmd(dev, cmd, arg)
+                for i in range(0, 48):
+                    self.PrepareMultiConfig()
+                    self.ColCounter.set(i)
+                    self.WriteColData.set(8)
+                self.CmdPrepForRead()
+            else:
+                print("Warning: ASIC enable is set to False!")
 
     # standard way to report a command has been executed
-    def reportCmd(self, dev,cmd,arg):
+
+    def reportCmd(self, dev, cmd, arg):
         """reportCmd command function"""
         "Enables to unify the console print out for all cmds"
         print("Command executed : ", cmd)
 
-    @staticmethod   
+    @staticmethod
     def frequencyConverter(self):
-        def func(dev, var):         
-            return '{:.3f} kHz'.format(1/(self.clkPeriod * self._count(var.dependencies)) * 1e-3)
+        def func(dev, var):
+            return '{:.3f} kHz'.format(1 / (self.clkPeriod * self._count(var.dependencies)) * 1e-3)
         return func
-
+    
 class Epix10kaAsicRev2(Epix10kaAsic):
     def __init__(self, **kwargs):
         """Create the ePix10kaAsic rev2 device"""

@@ -18,6 +18,7 @@
 # copied, modified, propagated, or distributed except according to the terms 
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
+import setupLibPaths
 import rogue.hardware.pgp
 import pyrogue.utilities.prbs
 import pyrogue.utilities.fileio
@@ -193,9 +194,9 @@ if (PRINT_VERBOSE): pyrogue.streamTap(pgpVc0, dbgData)
 appTop = QApplication(sys.argv)
 ePixBoard = EpixBoard(cmd, dataWriter, srp)
 ePixBoard.start(
-   pollEn   = args.pollEn,
-   initRead = args.initRead,
-   timeout  = 5.0,  
+   # pollEn   = args.pollEn,
+   # initRead = args.initRead,
+   # timeout  = 5.0,  
 )
 
 
