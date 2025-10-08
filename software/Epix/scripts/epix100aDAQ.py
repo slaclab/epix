@@ -20,10 +20,9 @@
 # contained in the LICENSE.txt file.
 #-----------------------------------------------------------------------------
 import setupLibPaths
-import rogue.hardware.pgp
 import pyrogue.utilities.prbs
 import pyrogue.utilities.fileio
-import pyrogue.gui
+import rogue
 import surf
 import surf.axi
 import surf.protocols.ssi
@@ -36,6 +35,7 @@ import sys
 import testBridge
 import ePixViewer as vi
 import ePixFpga as fpga
+import pyrogue.pydm
 import argparse
 
 try:
@@ -129,12 +129,11 @@ if args.simulation:
    pgpVc2 = pr.interfaces.simulation.StreamSim(host='localhost', dest=2, uid=2, ssi=True)
    pgpVc3 = pr.interfaces.simulation.StreamSim(host='localhost', dest=3, uid=2, ssi=True)   
 else:
-   pgpVc1 = rogue.hardware.pgp.PgpCard(args.pgp,0,0) # Data & cmds
-   pgpVc0 = rogue.hardware.pgp.PgpCard(args.pgp,0,1) # Registers for ePix board
-   pgpVc2 = rogue.hardware.pgp.PgpCard(args.pgp,0,2) # PseudoScope
-   pgpVc3 = rogue.hardware.pgp.PgpCard(args.pgp,0,3) # Monitoring (Slow ADC)
-   print("")
-   print("PGP Card Version: %x" % (pgpVc0.getInfo().version))
+   pgpVc1 = rogue.hardware.axi.AxiStreamDma(args.pgp,0+0,1) # Data & cmds
+   pgpVc0 = rogue.hardware.axi.AxiStreamDma(args.pgp,0+1,1) # Registers for ePix board
+   pgpVc2 = rogue.hardware.axi.AxiStreamDma(args.pgp,0+2,1) # PseudoScope
+   pgpVc3 = rogue.hardware.axi.AxiStreamDma(args.pgp,0+3,1) # Monitoring (Slow ADC)
+   
 
 
 # Add data stream to file as channel 1
@@ -248,6 +247,8 @@ class EpixBoard(pyrogue.Root):
         #self.add(MyRunControl('runControl'))
         self.add(dataWriter)
         self.guiTop = guiTop
+        self.zmqServer = pyrogue.interfaces.ZmqServer(root=self, addr='127.0.0.1', port=0)
+        self.addInterface(self.zmqServer)
 
         @self.command()
         def Trigger():
@@ -276,54 +277,18 @@ if (PRINT_VERBOSE): dbgData = rogue.interfaces.stream.Slave()
 if (PRINT_VERBOSE): dbgData.setDebug(60, "DATA[{}]".format(0))
 if (PRINT_VERBOSE): pyrogue.streamTap(pgpVc0, dbgData)
 
+guiTop = [] #pyrogue.gui.GuiTop(group = 'ePix100aGui')
 
-# Create GUI
-appTop = QApplication(sys.argv)
-guiTop = pyrogue.gui.GuiTop(group = 'ePix100aGui')
-ePixBoard = EpixBoard(guiTop, cmd, dataWriter, srp)
-ePixBoard.start(
-#   pollEn   = args.pollEn,
-#   initRead = args.initRead,
-#   timeout  = 5.0,  
-)
-guiTop.addTree(ePixBoard)
-guiTop.resize(1000,800)
-
-# Viewer gui
-gui = vi.Window(cameraType = 'ePix100a')
-gui.eventReader.frameIndex = 0
-#gui.eventReaderImage.VIEW_DATA_CHANNEL_ID = 0
-gui.setReadDelay(0)
-pyrogue.streamTap(pgpVc0, gui.eventReader) 
-pyrogue.streamTap(pgpVc2, gui.eventReaderScope)# PseudoScope
-pyrogue.streamTap(pgpVc3, gui.eventReaderMonitoring) # Slow Monitoring
-
-# scope gui
-#guiScope = vi.Window(cameraType = 'ePix100a')
-#guiScope.eventReader.frameIndex = 0
-#gui.eventReaderImage.VIEW_DATA_CHANNEL_ID = 0
-#guiScope.setReadDelay(0)
-#pyrogue.streamTap(pgpVc2, guiScope.eventReaderScope)# PseudoScope
+with EpixBoard(guiTop, cmd, dataWriter, srp) as ePixBoard:
 
 
-# Create mesh node (this is for remote control only, no data is shared with this)
-#mNode = pyrogue.mesh.MeshNode('rogueTest',iface='eth0',root=ePixBoard)
-#mNode = pyrogue.mesh.MeshNode('rogueEpix100a',iface='eth0',root=None)
-#mNode.setNewTreeCb(guiTop.addTree)
-#mNode.start()
+    ######################
+    # Development PyDM GUI
+    ######################
+    pyrogue.pydm.runPyDM(
+            serverList = ePixBoard.zmqServer.address,
+            sizeX      = 800,
+            sizeY      = 800
+    )
 
-
-# Run gui
-if (START_GUI):
-    appTop.exec_()
-
-# Close window and stop polling
-def stop():
-    mNode.stop()
-#    epics.stop()
-    ePixBoard.stop()
-    exit()
-
-# Start with: ipython -i scripts/epix100aDAQ.py for interactive approach
-print("Started rogue mesh and epics V3 server. To exit type stop()")
 
